@@ -2,6 +2,8 @@ import functools
 from inspect import iscoroutinefunction
 from time import perf_counter as time_now
 
+from .base import StatsClientBase
+
 
 def safe_wraps(wrapper, *args, **kwargs):
     """Safely wraps partial functions."""
@@ -13,10 +15,11 @@ def safe_wraps(wrapper, *args, **kwargs):
 class Timer:
     """A context manager/decorator for statsd.timing()."""
 
-    def __init__(self, client, stat, rate=1):
+    def __init__(self, client: "StatsClientBase", stat, rate=1, tags: dict | None = None):
         self.client = client
         self.stat = stat
         self.rate = rate
+        self.tags = tags
         self.ms = None
         self._sent = False
         self._start_time = None
@@ -71,4 +74,4 @@ class Timer:
         if self._sent:
             raise RuntimeError('Already sent data.')
         self._sent = True
-        self.client.timing(self.stat, self.ms, self.rate)
+        self.client.timing(self.stat, self.ms, self.rate, self.tags)

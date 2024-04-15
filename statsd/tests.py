@@ -64,7 +64,6 @@ def _unix_socket_client(prefix=None, socket_path=None):
     sc._sock = mock.Mock()
     return sc
 
-
 def _timer_check(sock, count, proto, start, end):
     send = send_method[proto](sock)
     eq_(send.call_count, count)
@@ -1064,3 +1063,4 @@ def test_unix_socket_timeout(mock_socket):
     cl = UnixSocketStatsClient(UNIX_SOCKET, timeout=test_timeout)
     cl.incr('foo')
     cl._sock.settimeout.assert_called_once_with(test_timeout)
+
