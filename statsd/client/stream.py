@@ -4,12 +4,16 @@ from .base import StatsClientBase, PipelineBase
 
 
 class StreamPipeline(PipelineBase):
-    def _send(self):
+    def _send_pipeline(self):
         self._client._after('\n'.join(self._stats))
         self._stats.clear()
 
 
 class StreamClientBase(StatsClientBase):
+    def __init__(self, prefix=None) -> None:
+        super().__init__(prefix)
+        self._sock: socket.socket | None = None
+
     def connect(self):
         raise NotImplementedError()
 
@@ -32,6 +36,7 @@ class StreamClientBase(StatsClientBase):
         self._do_send(data)
 
     def _do_send(self, data):
+        assert self._sock, "Socket not set up."
         self._sock.sendall(data.encode('ascii') + b'\n')
 
 
@@ -41,12 +46,11 @@ class TCPStatsClient(StreamClientBase):
     def __init__(self, host='localhost', port=8125, prefix=None,
                  timeout=None, ipv6=False):
         """Create a new client."""
+        super().__init__(prefix)
         self._host = host
         self._port = port
         self._ipv6 = ipv6
         self._timeout = timeout
-        self._prefix = prefix
-        self._sock = None
 
     def connect(self):
         fam = socket.AF_INET6 if self._ipv6 else socket.AF_INET
@@ -62,10 +66,9 @@ class UnixSocketStatsClient(StreamClientBase):
 
     def __init__(self, socket_path, prefix=None, timeout=None):
         """Create a new client."""
+        super().__init__(prefix)
         self._socket_path = socket_path
         self._timeout = timeout
-        self._prefix = prefix
-        self._sock = None
 
     def connect(self):
         self._sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)

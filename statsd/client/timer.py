@@ -2,9 +2,6 @@ import functools
 from inspect import iscoroutinefunction
 from time import perf_counter as time_now
 
-from .base import StatsClientBase
-
-
 def safe_wraps(wrapper, *args, **kwargs):
     """Safely wraps partial functions."""
     while isinstance(wrapper, functools.partial):
@@ -15,7 +12,7 @@ def safe_wraps(wrapper, *args, **kwargs):
 class Timer:
     """A context manager/decorator for statsd.timing()."""
 
-    def __init__(self, client: "StatsClientBase", stat, rate=1, tags: dict | None = None):
+    def __init__(self, client, stat, rate=1, tags: dict | None = None):
         self.client = client
         self.stat = stat
         self.rate = rate

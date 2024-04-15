@@ -8,11 +8,14 @@ from .timer import Timer
 class StatsClientBase:
     """A Base class for various statsd clients."""
 
+    def __init__(self, prefix=None) -> None:
+        self._prefix = prefix
+
     def close(self):
         """Used to close and clean up any underlying resources."""
         raise NotImplementedError()
 
-    def _send(self):
+    def _send(self, data):
         raise NotImplementedError()
 
     def pipeline(self) -> "PipelineBase":
@@ -82,12 +85,12 @@ class StatsClientBase:
 
 class PipelineBase(StatsClientBase):
 
-    def __init__(self, client):
+    def __init__(self, client: StatsClientBase):
         self._client = client
         self._prefix = client._prefix
         self._stats = deque()
 
-    def _send(self):
+    def _send_pipeline(self):
         raise NotImplementedError()
 
     def _after(self, data):
@@ -103,7 +106,7 @@ class PipelineBase(StatsClientBase):
     def send(self):
         if not self._stats:
             return
-        self._send()
+        self._send_pipeline()
 
     def pipeline(self):
         return self.__class__(self)
